@@ -12,7 +12,7 @@ func main() {
 
 	var fromLang, toLang string
 	fromLang = "en"
-	toLang = "es"
+	toLang = "de"
 
 	db, err := download.GetDictionary(fromLang, toLang)
 
@@ -20,12 +20,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	column_data, err := data.ReadColumnValues(db, "simple_translation", "written_rep")
+	translations, err := data.GetTranslations(db, 5.0)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(column_data)
+	for _, value := range translations {
+		fmt.Println(value)
+	}
 
 	defer db.Close()
 }
