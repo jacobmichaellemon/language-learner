@@ -1,8 +1,11 @@
 package data
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"fmt"
+	"math/big"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -18,11 +21,26 @@ type Translation struct {
 	Imporatance float64
 }
 
+func GetRandomWord(translations []Translation) Translation {
+	length := len(translations)
+	if length == 0 {
+		return Translation{}
+	}
+	randomInt, _ := rand.Int(rand.Reader, big.NewInt(int64(length)))
+	return translations[randomInt.Int64()]
+}
+
+func getRandomChar() string {
+	letters := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+	randomInt, _ := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+	return letters[randomInt.Int64()]
+}
+
 // ReadColumnValues fetches all values from a specific column in a table.
 func ReadColumnValues(db *sql.DB, tableName, columnName string, importance float32) ([]string, error) {
 	// Construct the query. (Use parameter substitution for values, but table/column
 	// names in SQL must be formatted into the query string).
-	query := fmt.Sprintf("SELECT %s FROM %s WHERE importance >= %f LIMIT 50", columnName, tableName, importance)
+	query := fmt.Sprintf("SELECT %s FROM %s WHERE importance >= %f", columnName, tableName, importance)
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -50,48 +68,48 @@ func ReadColumnValues(db *sql.DB, tableName, columnName string, importance float
 	return results, nil
 }
 
-func GetTranslations(db *sql.DB, importance float32) ([]Translation, error) {
+func GetRandomTranslation(db *sql.DB, importance float32) (Translation, error) {
 	// Query all 7 columns from the translation table
-	query := fmt.Sprintf("SELECT * FROM translation WHERE importance >= %f LIMIT 200", importance)
+	randomChar := getRandomChar()
+	stringRandomWildcard := strings.Join([]string{randomChar, "%"}, "")
+	query := fmt.Sprintf("SELECT * FROM translation WHERE written_rep LIKE '%s' AND importance >= %f LIMIT 1", stringRandomWildcard, importance)
 
 	rows, err := db.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("query error: %w", err)
+		return Translation{}, fmt.Errorf("query error: %w", err)
 	}
 	defer rows.Close()
 
-	var translations []Translation
+	var translation Translation
 
 	for rows.Next() {
-		var t Translation
 
 		// Pass pointers to every field in exact SELECT order
 		err := rows.Scan(
-			&t.Lexentry,
-			&t.Sense_Num,
-			&t.Sense,
-			&t.Written_Rep,
-			&t.TransList,
-			&t.Score,
-			&t.Is_Good,
-			&t.Imporatance,
+			&translation.Lexentry,
+			&translation.Sense_Num,
+			&translation.Sense,
+			&translation.Written_Rep,
+			&translation.TransList,
+			&translation.Score,
+			&translation.Is_Good,
+			&translation.Imporatance,
 		)
-		t.TranslationText()
+		translation.TranslationText()
 		if err != nil {
-			return nil, fmt.Errorf("scan error: %w", err)
+			return Translation{}, fmt.Errorf("scan error: %w", err)
 		}
 
-		translations = append(translations, t)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return Translation{}, err
 	}
 
-	return translations, nil
+	return translation, nil
 }
 
-// Access helper when reading the result:
+// Access helper when reading the result: avoids null sql strings
 func (t Translation) TranslationText() {
 	if t.Lexentry.Valid {
 	} else {

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
-	"github.com/jacobmichaellemon/language-learner/internal/data"
 	"github.com/jacobmichaellemon/language-learner/internal/download"
 )
 
@@ -20,13 +18,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	translations, err := data.GetTranslations(db, 5.0)
+	_, err = CreateQuiz(db)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	for _, value := range translations {
-		fmt.Println(value)
 	}
 
 	defer db.Close()
