@@ -11,23 +11,24 @@ func main() {
 
 	fmt.Println("Welcome to language learner!")
 	fmt.Println("The availible languages are: ")
-	for key, value := range languages {
-		fmt.Printf("Language Code: %s Language: %s\n", key, value)
-	}
+	PrintLanguages()
 
-	fromLang := GetValidLanguageCode("from")
-	toLang := GetValidLanguageCode("to")
+	fromLang := GetValidLanguageCode(From)
+	toLang := GetValidLanguageCode(To)
 
 	db, err := download.GetDictionary(fromLang, toLang)
-
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	_, err = CreateQuiz(db)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	defer db.Close()
+
+	translations, err := GetQuizWords(db, 3.0)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	score := StartQuiz(translations, toLang, fromLang)
+
+	fmt.Printf("Final Score: %d\n", score)
+
 }

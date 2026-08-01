@@ -68,45 +68,45 @@ func ReadColumnValues(db *sql.DB, tableName, columnName string, importance float
 	return results, nil
 }
 
-func GetRandomTranslation(db *sql.DB, importance float32) (Translation, error) {
+func GetRandomTranslations(db *sql.DB, importance float32) ([]Translation, error) {
 	// Query all 7 columns from the translation table
 	randomChar := getRandomChar()
 	stringRandomWildcard := strings.Join([]string{randomChar, "%"}, "")
-	query := fmt.Sprintf("SELECT * FROM translation WHERE written_rep LIKE '%s' AND importance >= %f LIMIT 1", stringRandomWildcard, importance)
+	query := fmt.Sprintf("SELECT * FROM translation WHERE written_rep LIKE '%s' AND importance >= %f", stringRandomWildcard, importance)
 
 	rows, err := db.Query(query)
 	if err != nil {
-		return Translation{}, fmt.Errorf("query error: %w", err)
+		return nil, fmt.Errorf("query error: %w", err)
 	}
 	defer rows.Close()
 
-	var translation Translation
+	var translations []Translation
 
 	for rows.Next() {
-
+		var t Translation
 		// Pass pointers to every field in exact SELECT order
 		err := rows.Scan(
-			&translation.Lexentry,
-			&translation.Sense_Num,
-			&translation.Sense,
-			&translation.Written_Rep,
-			&translation.TransList,
-			&translation.Score,
-			&translation.Is_Good,
-			&translation.Imporatance,
+			&t.Lexentry,
+			&t.Sense_Num,
+			&t.Sense,
+			&t.Written_Rep,
+			&t.TransList,
+			&t.Score,
+			&t.Is_Good,
+			&t.Imporatance,
 		)
-		translation.TranslationText()
+		t.TranslationText()
 		if err != nil {
-			return Translation{}, fmt.Errorf("scan error: %w", err)
+			return nil, fmt.Errorf("scan error: %w", err)
 		}
-
+		translations = append(translations, t)
 	}
 
 	if err := rows.Err(); err != nil {
-		return Translation{}, err
+		return nil, err
 	}
 
-	return translation, nil
+	return translations, nil
 }
 
 // Access helper when reading the result: avoids null sql strings
