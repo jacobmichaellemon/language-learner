@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/jacobmichaellemon/language-learner/internal/download"
@@ -8,9 +9,14 @@ import (
 
 func main() {
 
-	var fromLang, toLang string
-	fromLang = "en"
-	toLang = "de"
+	fmt.Println("Welcome to language learner!")
+	fmt.Println("The availible languages are: ")
+	for key, value := range languages {
+		fmt.Printf("Language Code: %s Language: %s\n", key, value)
+	}
+
+	fromLang := GetValidLanguageCode("from")
+	toLang := GetValidLanguageCode("to")
 
 	db, err := download.GetDictionary(fromLang, toLang)
 
