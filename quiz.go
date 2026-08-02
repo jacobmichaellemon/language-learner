@@ -52,7 +52,7 @@ var specialChars = map[string]string{
 // generate a list of 20 vocab questions to quiz on
 func GetQuizWords(db *sql.DB, importance float32) ([]data.Translation, error) {
 	var translations []data.Translation
-	for len(translations) < 20 {
+	for len(translations) < 3 {
 		newTranslations, err := data.GetRandomTranslations(db, importance)
 		newTranslation := data.GetRandomWord(newTranslations)
 		if slices.Contains(translations, newTranslation) || newTranslation.Written_Rep == "" {
@@ -74,7 +74,7 @@ func StartQuiz(translations []data.Translation, toLang string, fromLang string) 
 	fmt.Printf("Quiz starting: guess the %s from the %s word given! Good luck!\n", toLanguage, fromLanguage)
 	for i, translation := range translations {
 		fmt.Printf("Question #%d: \n", i+1)
-		fmt.Printf("%s - %s (%s): ", translation.Written_Rep, translation.Sense.String, translation.TransList)
+		fmt.Printf("%s - %s: ", translation.Written_Rep, translation.Sense.String)
 		var guess string
 		isCorrect := false
 		fmt.Scan(&guess)

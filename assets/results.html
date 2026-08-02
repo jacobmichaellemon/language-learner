@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Complete</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="quiz-container results-container">
+        <h2>Quiz Completed!</h2>
+        
+        <p class="score-summary">
+            You scored <strong>{{ .Score }}</strong> out of <strong>{{ .Total }}</strong>!
+        </p>
+
+        <!-- Form pointing to a /reset route to clear the session and restart -->
+        <form action="/reset" method="POST">
+            <button type="submit" class="submit-btn">Try Again</button>
+        </form>
+    </main>
+</body>
+</html>
