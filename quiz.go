@@ -50,9 +50,9 @@ var specialChars = map[string]string{
 }
 
 // generate a list of 20 vocab questions to quiz on
-func GetQuizWords(db *sql.DB, importance float32) ([]data.Translation, error) {
+func GetQuizWords(db *sql.DB, numQuestions int, importance float32) ([]data.Translation, error) {
 	var translations []data.Translation
-	for len(translations) < 3 {
+	for len(translations) < numQuestions {
 		newTranslations, err := data.GetRandomTranslations(db, importance)
 		newTranslation := data.GetRandomWord(newTranslations)
 		if slices.Contains(translations, newTranslation) || newTranslation.Written_Rep == "" {

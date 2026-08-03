@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"text/template"
 
 	"github.com/jacobmichaellemon/language-learner/internal/data"
+	"github.com/jacobmichaellemon/language-learner/internal/download"
 )
 
 const sessionCookieName = "vocab_session_id"
@@ -27,10 +29,68 @@ type QuizApp struct {
 }
 
 type UserSession struct {
-	QuestionIndex int
-	CurrentIndex  int
-	Total         int
-	Score         int
+	QuestionIndex   int
+	CurrentIndex    int
+	Total           int
+	Score           int
+	Started         bool
+	ToLang          string
+	FromLang        string
+	NumberQuestions int
+	Languages       map[string]string
+}
+
+func (app *QuizApp) handleCreateQuiz(w http.ResponseWriter, r *http.Request) {
+	sessionID := getOrCreateSessionID(w, r)
+	app.mu.RLock()
+	session := app.Sessions[sessionID]
+	app.mu.RUnlock()
+
+	// Check if the quiz is started
+	if session.Started {
+		http.Redirect(w, r, "/quiz", http.StatusSeeOther)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		// Parse submitted form data
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nativeLang := r.FormValue("native_lang")
+		targetLang := r.FormValue("target_lang")
+		numQuestions, _ := strconv.Atoi(r.FormValue("num_questions"))
+
+		db, err := download.GetDictionary(nativeLang, targetLang)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		app.DB = db
+
+		questions, err := GetQuizWords(db, numQuestions, 3.0)
+		if err != nil {
+			log.Fatal(err)
+		}
+		app.Questions = questions
+
+		// Construct state for the active quiz
+		data := UserSession{
+			ToLang:          nativeLang,
+			FromLang:        targetLang,
+			NumberQuestions: len(app.Questions),
+			Started:         true,
+		}
+		app.Sessions[sessionID] = data
+		// Redirect back to GET "/" to show the next question
+		http.Redirect(w, r, "/quiz", http.StatusSeeOther)
+	}
+	data := UserSession{Started: false, Languages: languages}
+	tmpl.ExecuteTemplate(w, "setup.html", data)
 }
 
 func (app *QuizApp) handleQuiz(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +122,7 @@ func (app *QuizApp) handleQuiz(w http.ResponseWriter, r *http.Request) {
 
 func (app *QuizApp) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/quiz", http.StatusSeeOther)
 		return
 	}
 
@@ -92,7 +152,7 @@ func (app *QuizApp) handleSubmit(w http.ResponseWriter, r *http.Request) {
 	app.mu.Unlock()
 
 	// Redirect back to GET "/" to show the next question
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/quiz", http.StatusSeeOther)
 }
 
 func (app *QuizApp) handleResults(w http.ResponseWriter, r *http.Request) {
@@ -117,28 +177,16 @@ func (app *QuizApp) handleResults(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *QuizApp) handleReset(w http.ResponseWriter, r *http.Request) {
-	// Only allow POST requests for resetting state
-	if r.Method != http.MethodPost {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
+	// Clear session/cookies explicitly on restart
+	cookie := &http.Cookie{
+		Name:   "vocab_session_id",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1, // Deletes cookie in browser
 	}
+	http.SetCookie(w, cookie)
 
-	sessionID := getOrCreateSessionID(w, r)
-	questions, err := GetQuizWords(app.DB, 3.0)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	app.mu.Lock()
-	app.Questions = questions
-	app.Sessions[sessionID] = UserSession{
-		CurrentIndex: 0,
-		Score:        0,
-		Total:        len(questions),
-	}
-	// Reset the session data back to initial state
-	app.mu.Unlock()
-
+	// Redirect back to root setup form
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 

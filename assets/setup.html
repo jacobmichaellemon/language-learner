@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Vocab Quiz</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="card">
+        <!-- Landing Page Form -->
+        <h1>Create a Vocab Quiz</h1>
+        <form action="/" method="POST">
+            <div class="form-group">
+                <label for="native_lang">Starting Language:</label>
+                <select name="native_lang" id="native_lang" required>
+                    {{range $code, $name := .Languages}}
+                        <option value="{{$code}}">{{$name}} ({{$code}})</option>
+                    {{end}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="target_lang">I Want to Practice (Target Language):</label>
+                <select name="target_lang" id="target_lang" required>
+                    {{range $code, $name := .Languages}}
+                        <option value="{{$code}}">{{$name}} ({{$code}})</option>
+                    {{end}}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="num_questions">Number of Questions:</label>
+                <select name="num_questions" id="num_questions" required>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+
+            <button type="submit">Start Quiz</button>
+        </form>
+    </div>
+</body>
+</html>

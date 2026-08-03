@@ -16,8 +16,10 @@
         <!-- Question Prompt -->
         <h2 class="question-title">
             Word: <span class="word-term">{{ .Question.Written_Rep }}</span>
-            Defininition: <span class="word-term">{{ .Question.Sense.String }}</span>
         </h2>
+        <h3>
+            Defininition: <span class="word-term">{{ .Question.Sense.String }}</span>
+        </h3>
 
         <!-- Form Submission -->
         <form action="/submit" method="POST" class="quiz-form">
