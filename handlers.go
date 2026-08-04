@@ -19,8 +19,7 @@ import (
 const sessionCookieName = "vocab_session_id"
 
 type QuizApp struct {
-	Questions []data.Translation
-	Tmpl      *template.Template
+	Tmpl *template.Template
 	// Thread-safe map to track current question index per user/session
 	// Key: session ID or simple ID -> Value: current question index
 	mu       sync.RWMutex
@@ -29,6 +28,7 @@ type QuizApp struct {
 }
 
 type UserSession struct {
+	Questions       []data.Translation
 	QuestionIndex   int
 	CurrentIndex    int
 	Total           int
@@ -62,7 +62,12 @@ func (app *QuizApp) handleCreateQuiz(w http.ResponseWriter, r *http.Request) {
 
 		nativeLang := r.FormValue("native_lang")
 		targetLang := r.FormValue("target_lang")
+		if nativeLang == targetLang {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 		numQuestions, _ := strconv.Atoi(r.FormValue("num_questions"))
+		difficult_rating, _ := strconv.ParseFloat(r.FormValue("difficult_rating"), 32)
 
 		db, err := download.GetDictionary(nativeLang, targetLang)
 		if err != nil {
@@ -72,18 +77,18 @@ func (app *QuizApp) handleCreateQuiz(w http.ResponseWriter, r *http.Request) {
 
 		app.DB = db
 
-		questions, err := GetQuizWords(db, numQuestions, 3.0)
+		questions, err := GetQuizWords(db, numQuestions, float32(difficult_rating))
 		if err != nil {
 			log.Fatal(err)
 		}
-		app.Questions = questions
 
 		// Construct state for the active quiz
 		data := UserSession{
 			ToLang:          nativeLang,
 			FromLang:        targetLang,
-			NumberQuestions: len(app.Questions),
+			NumberQuestions: len(questions),
 			Started:         true,
+			Questions:       questions,
 		}
 		app.Sessions[sessionID] = data
 		// Redirect back to GET "/" to show the next question
@@ -100,12 +105,12 @@ func (app *QuizApp) handleQuiz(w http.ResponseWriter, r *http.Request) {
 	app.mu.RUnlock()
 
 	// Check if the quiz is finished
-	if session.CurrentIndex >= len(app.Questions) {
+	if session.CurrentIndex >= len(session.Questions) {
 		http.Redirect(w, r, "/results", http.StatusSeeOther)
 		return
 	}
 
-	currentQ := app.Questions[session.CurrentIndex]
+	currentQ := session.Questions[session.CurrentIndex]
 
 	data := struct {
 		QuestionIndex int
@@ -113,7 +118,7 @@ func (app *QuizApp) handleQuiz(w http.ResponseWriter, r *http.Request) {
 		Question      data.Translation
 	}{
 		QuestionIndex: session.CurrentIndex + 1,
-		Total:         len(app.Questions),
+		Total:         len(session.Questions),
 		Question:      currentQ,
 	}
 
@@ -131,7 +136,7 @@ func (app *QuizApp) handleSubmit(w http.ResponseWriter, r *http.Request) {
 
 	app.mu.Lock()
 	session := app.Sessions[sessionID]
-	currentQ := app.Questions[session.CurrentIndex]
+	currentQ := session.Questions[session.CurrentIndex]
 	isCorrect := false
 
 	// 1. Evaluate answer logic here (e.g., update user score)
@@ -159,14 +164,25 @@ func (app *QuizApp) handleResults(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := getOrCreateSessionID(w, r)
 	session := app.Sessions[sessionID]
+	var written_rep []string
+	var transList []string
+
+	for _, word := range session.Questions {
+		transList = append(transList, word.TransList)
+		written_rep = append(written_rep, word.Written_Rep)
+	}
 
 	// Pass the score data to results.html
 	data := struct {
-		Score int
-		Total int
+		Score       int
+		Total       int
+		Written_Rep []string
+		TransList   []string
 	}{
-		Score: session.Score,
-		Total: len(app.Questions),
+		Score:       session.Score,
+		Total:       len(session.Questions),
+		Written_Rep: written_rep,
+		TransList:   transList,
 	}
 
 	// Ensure template execution errors are logged

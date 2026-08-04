@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"slices"
 	"strings"
 
@@ -18,7 +17,7 @@ const (
 )
 
 var languages = map[string]string{
-	"bg": "Bulgarian",
+	//"bg": "Bulgarian",
 	"ca": "Catalan",
 	"cs": "Czech",
 	"da": "Danish",
@@ -31,9 +30,9 @@ var languages = map[string]string{
 	"ga": "Irish",
 	"id": "Indonesian",
 	"it": "Italian",
-	"ja": "Japanese",
+	//"ja": "Japanese",
 	"ku": "Kurdish",
-	"la": "Latin",
+	//"la": "Latin",
 	"lt": "Lithuanian",
 	"mg": "Malagasy",
 	"nl": "Dutch",
@@ -43,80 +42,28 @@ var languages = map[string]string{
 	"ru": "Russian",
 	"sv": "Swedish",
 	"tr": "Turkish",
-	"zh": "Simplified Chinsese"}
+	//"zh": "Simplified Chinsese"
+}
 
 var specialChars = map[string]string{
 	"es": "á é í ó ú ñ",
 }
 
-// generate a list of 20 vocab questions to quiz on
+// generate a list of X vocab questions to quiz on based on the importance of the words
 func GetQuizWords(db *sql.DB, numQuestions int, importance float32) ([]data.Translation, error) {
 	var translations []data.Translation
+	var words []string
 	for len(translations) < numQuestions {
 		newTranslations, err := data.GetRandomTranslations(db, importance)
 		newTranslation := data.GetRandomWord(newTranslations)
-		if slices.Contains(translations, newTranslation) || newTranslation.Written_Rep == "" {
+		if slices.Contains(words, strings.ToLower(newTranslation.Written_Rep)) || newTranslation.Written_Rep == "" {
 			continue
 		}
+		words = append(words, strings.ToLower(newTranslation.Written_Rep))
 		translations = append(translations, newTranslation)
 		if err != nil {
 			return nil, err
 		}
 	}
 	return translations, nil
-}
-
-// generate a list of 20 vocab questions to quiz on
-func StartQuiz(translations []data.Translation, toLang string, fromLang string) int {
-	var score int
-	toLanguage := languages[toLang]
-	fromLanguage := languages[fromLang]
-	fmt.Printf("Quiz starting: guess the %s from the %s word given! Good luck!\n", toLanguage, fromLanguage)
-	for i, translation := range translations {
-		fmt.Printf("Question #%d: \n", i+1)
-		fmt.Printf("%s - %s: ", translation.Written_Rep, translation.Sense.String)
-		var guess string
-		isCorrect := false
-		fmt.Scan(&guess)
-		if guess == "!" {
-			fmt.Printf("%s\n", specialChars[toLang])
-			fmt.Scan(&guess)
-		}
-		for word := range strings.SplitSeq(translation.TransList, "|") {
-			if strings.EqualFold(guess, strings.TrimSpace(word)) {
-				fmt.Println("Correct!")
-				isCorrect = true
-				score++
-				break
-			}
-		}
-		if !isCorrect {
-			fmt.Println("Wrong")
-		}
-	}
-	return score
-}
-
-// get a valid language code from the list of datasets availible. direction: to/from ex. from english to spanish
-func GetValidLanguageCode(direction Direction) string {
-	var language_code string
-	for {
-		fmt.Printf("Enter a valid language code to translate %s: \n", direction)
-		fmt.Scan(&language_code)
-		_, ok := languages[language_code]
-		if !ok {
-			fmt.Println("Invalid language code, please try again!")
-			continue
-		} else {
-			break
-		}
-	}
-	return language_code
-}
-
-// lists lanaguages availible and their language codes
-func PrintLanguages() {
-	for key, value := range languages {
-		fmt.Printf("Language Code: %s Language: %s\n", key, value)
-	}
 }

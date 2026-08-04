@@ -14,6 +14,13 @@
             You scored <strong>{{ .Score }}</strong> out of <strong>{{ .Total }}</strong>!
         </p>
 
+        {{ range $index, $rep := .Written_Rep }}
+        <tr>
+            <td><strong>Word: {{ $rep }}</strong></td>
+            <p><td>Translations: {{ index $.TransList $index }}</td></p>
+        </tr>
+        {{ end }}
+
         <!-- Form pointing to a /reset route to clear the session and restart -->
         <form action="/reset" method="POST">
             <button type="submit" class="submit-btn">Try Again</button>
