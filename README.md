@@ -46,6 +46,7 @@ Application requirements:
 Running the application
 
 `docker build -t language-learner .`
+
 `docker run -d -p 127.0.0.1:8080:8080 language-learner:latest`
 
 Starting Screen Options:
