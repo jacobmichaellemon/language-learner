@@ -17,18 +17,26 @@
         <h2 class="question-title">
             Word: <span class="word-term">{{ .Question.Written_Rep }}</span>
         </h2>
-        <h3>
-            Defininition: <span class="word-term">{{ .Question.Sense.String }}</span>
-        </h3>
-
+        {{ if .Question.Sense.String }}
+        <div class="question-description">
+            <h3>Definition:</h3> 
+            <div class="word-description">{{ .Question.Sense.String }}</div>
+            </div>
+        {{ end }}
         <!-- Form Submission -->
         <form action="/submit" method="POST" class="quiz-form">
             <div class="options-group">
                     <label class="option-card">
-                        <input type="text" name="answer" value="" required>
+                        <input type="text" id="answer" name="answer" value="" autofocus="autofocus" required>
                     </label>
             </div>
-
+            {{ if .SpecialChars }}
+            <div class="special-characters">
+                <p>
+                    Special characters: {{ .SpecialChars }}
+                </p>
+            </div>
+            {{ end }}
             <button type="submit" class="submit-btn">Submit Answer</button>
         </form>
     </main>

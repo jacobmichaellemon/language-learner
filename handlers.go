@@ -38,6 +38,7 @@ type UserSession struct {
 	FromLang        string
 	NumberQuestions int
 	Languages       map[string]string
+	SpecialChars    string
 }
 
 func (app *QuizApp) handleCreateQuiz(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +69,10 @@ func (app *QuizApp) handleCreateQuiz(w http.ResponseWriter, r *http.Request) {
 		}
 		numQuestions, _ := strconv.Atoi(r.FormValue("num_questions"))
 		difficult_rating, _ := strconv.ParseFloat(r.FormValue("difficult_rating"), 32)
-
+		special, ok := specialChars[targetLang]
+		if !ok {
+			special = ""
+		}
 		db, err := download.GetDictionary(nativeLang, targetLang)
 		if err != nil {
 			log.Fatal(err)
@@ -89,6 +93,7 @@ func (app *QuizApp) handleCreateQuiz(w http.ResponseWriter, r *http.Request) {
 			NumberQuestions: len(questions),
 			Started:         true,
 			Questions:       questions,
+			SpecialChars:    special,
 		}
 		app.Sessions[sessionID] = data
 		// Redirect back to GET "/" to show the next question
@@ -116,10 +121,12 @@ func (app *QuizApp) handleQuiz(w http.ResponseWriter, r *http.Request) {
 		QuestionIndex int
 		Total         int
 		Question      data.Translation
+		SpecialChars  string
 	}{
 		QuestionIndex: session.CurrentIndex + 1,
 		Total:         len(session.Questions),
 		Question:      currentQ,
+		SpecialChars:  session.SpecialChars,
 	}
 
 	tmpl.ExecuteTemplate(w, "quiz.html", data)
