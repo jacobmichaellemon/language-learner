@@ -49,10 +49,10 @@ Running the application
 `docker run -d -p 127.0.0.1:8080:8080 language-learner:latest`
 
 Starting Screen Options:
-![Quiz Starting Screen](images/quiz_start.png)
+![Quiz Starting Screen](https://github.com/jacobmichaellemon/language-learner/blob/main/images/quiz_start.PNG?raw=true)
 
 Quiz Question
-![Quiz Question](images/quiz_question.png)
+![Quiz Question](https://github.com/jacobmichaellemon/language-learner/blob/main/images/quiz_question.PNG?raw=true)
 
 Finished Quiz Results Screen
-![Quiz Results Screen](images/quiz_results.png)
+![Quiz Results Screen](https://github.com/jacobmichaellemon/language-learner/blob/main/images/quiz_results.PNG?raw=true)
