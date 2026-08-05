@@ -28,10 +28,6 @@ body {
     color: #2563eb;
 }
 
-.question-description:has(.word-description:empty){
-    display: none;
-}
-
 .options-group {
     display: flex;
     flex-direction: column;

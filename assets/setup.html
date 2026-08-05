@@ -12,7 +12,7 @@
         <h1>Create a Vocab Quiz</h1>
         <form action="/" method="POST">
             <div class="form-group">
-                <label for="native_lang">Starting Language:</label>
+                <label for="native_lang">Native Language:</label>
                 <select name="native_lang" id="native_lang" required>
                     {{range $code, $name := .Languages}}
                         <option value="{{$code}}">{{$name}} ({{$code}})</option>
@@ -21,7 +21,7 @@
             </div>
 
             <div class="form-group">
-                <label for="target_lang">I Want to Practice (Target Language):</label>
+                <label for="target_lang">Target Language:</label>
                 <select name="target_lang" id="target_lang" required>
                     {{range $code, $name := .Languages}}
                         <option value="{{$code}}">{{$name}} ({{$code}})</option>
