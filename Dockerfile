@@ -27,12 +27,11 @@ WORKDIR /app
 
 # Copy the built binary from the builder stage
 COPY --from=builder /app/language-learner .
-# Copy your assets/templates folder into the runtime container
+# Copy assets/templates folder into the runtime container; contains templates
 COPY --from=builder /app/assets ./assets
-# Copy your assets/static folder into the runtime container
+# Copy assets/static folder into the runtime container; contains css styling
 COPY --from=builder /app/static ./static
 
-# Expose port (adjust if your application uses a different port)
 EXPOSE 8080
 
 # Run the binary

@@ -38,7 +38,7 @@ type UserSession struct {
 	FromLang        string
 	NumberQuestions int
 	Languages       map[string]string
-	SpecialChars    string
+	SpecialChars    []string
 }
 
 func (app *QuizApp) handleCreateQuiz(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +71,7 @@ func (app *QuizApp) handleCreateQuiz(w http.ResponseWriter, r *http.Request) {
 		difficult_rating, _ := strconv.ParseFloat(r.FormValue("difficult_rating"), 32)
 		special, ok := specialChars[targetLang]
 		if !ok {
-			special = ""
+			special = nil
 		}
 		db, err := download.GetDictionary(nativeLang, targetLang)
 		if err != nil {
@@ -121,7 +121,7 @@ func (app *QuizApp) handleQuiz(w http.ResponseWriter, r *http.Request) {
 		QuestionIndex int
 		Total         int
 		Question      data.Translation
-		SpecialChars  string
+		SpecialChars  []string
 	}{
 		QuestionIndex: session.CurrentIndex + 1,
 		Total:         len(session.Questions),

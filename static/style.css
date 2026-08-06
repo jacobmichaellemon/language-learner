@@ -174,3 +174,39 @@ button[type="submit"]:hover {
 button[type="submit"]:active {
     transform: scale(0.98);
 }
+
+#itemList li {
+  list-style: none;     /* optional: remove bullets */
+  margin: 6px;
+}
+
+#itemList button.js-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 14px;
+
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 10px;
+
+  background: #fff;
+  color: #111827;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 150ms ease, box-shadow 150ms ease;
+  box-shadow: 0 6px 14px rgba(17, 24, 39, 0.06);
+  margin: 12px;
+}
+
+#itemList button.js-item:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+#itemList button.js-item:active {
+  transform: translateY(0);
+}

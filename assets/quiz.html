@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vocab Quiz</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
 </head>
 <body>
     <main class="quiz-container">
@@ -31,10 +32,13 @@
                     </label>
             </div>
             {{ if .SpecialChars }}
+            <h3>Special Characters:</h3>
             <div class="special-characters">
-                <p>
-                    Special characters: {{ .SpecialChars }}
-                </p>
+            <ul id="itemList">
+                {{ range .SpecialChars }}
+                    <button type="button" class="js-item" data-value="{{.}}">{{.}}
+                {{end}}
+            </ul>
             </div>
             {{ end }}
             <button type="submit" class="submit-btn">Submit Answer</button>
