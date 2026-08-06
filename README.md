@@ -1,3 +1,5 @@
+# Language Learner
+
 A go application to help you learn vocabulary in different languages in a gamified way. The application allows to choose a native language
 and a target language, how many words 10, 25, 50, 100 to quiz on, and the level of difficult base on word relevance.
 
@@ -38,17 +40,16 @@ The application uses the datasets stored on: https://www.wikdict.com/page/downlo
 
 - All data is extracted from Wiktionary by the DBnary project. 
 
-Application requirements:
+### Application requirements:
 
 - go (v1.25.3) 
 - sqlite3
 
-Running the application
+### Running the application
 
 `docker build -t language-learner .`
 
 `docker run -d -p 127.0.0.1:8080:8080 language-learner:latest`
-
 
 
 ![Quiz Starting Screen](https://github.com/jacobmichaellemon/language-learner/blob/main/images/quiz_start.PNG?raw=true)
