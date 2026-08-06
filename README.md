@@ -40,16 +40,33 @@ The application uses the datasets stored on: https://www.wikdict.com/page/downlo
 
 - All data is extracted from Wiktionary by the DBnary project. 
 
+## Motivation
+- Wanted to create a simple and easy to use alternative to subscription based language learning applications
+- Scalable difficulty allows user to build a foundational knowledge and slowly progress at their own pace
+- Configurable to change the direction of learning and easily swap between langauges
+
 ### Application requirements:
 
 - go (v1.25.3) 
 - sqlite3
 
-### Running the application
+### Quick Start
+
+`git clone https://github.com/jacobmichaellemon/language-learner`
+
+`cd language-learner`
 
 `docker build -t language-learner .`
 
+### Usage
+
 `docker run -d -p 127.0.0.1:8080:8080 language-learner:latest`
+
+Options:
+- Native Language: the language the words will be displayed in
+- Target Lanagues: the language the words will be guessed in
+- Number of Questions: how long the vocab quiz will be
+- Difficulty: how relevant the words are in common discussions
 
 
 ![Quiz Starting Screen](https://github.com/jacobmichaellemon/language-learner/blob/main/images/quiz_start.PNG?raw=true)
@@ -61,3 +78,8 @@ The application uses the datasets stored on: https://www.wikdict.com/page/downlo
 
 
 ![Quiz Results Screen](https://github.com/jacobmichaellemon/language-learner/blob/main/images/quiz_results.PNG?raw=true)
+
+
+### Contributing 
+
+If you'd like to contribute, please fork the repository and open a pull request to the `main` branch.
